@@ -80,7 +80,7 @@ begin
     ShowMessage('请输入密码！');
     Exit;
   end;
-  Ini := TIniFile.Create(ExtractFilePath(Application.ExeName)+'TAppSync.ini');
+  Ini := TIniFile.Create(ExtractFilePath(Application.ExeName) + 'TAppSync.ini');
   try
     Ini.WriteString('TAppSync','Host', cboRemoteHost.Text);
     Ini.WriteString('TAppSync','User', edtRemoteUser.Text);
@@ -113,13 +113,14 @@ end;
 procedure TFrmMain.FormCreate(Sender: TObject);
 begin
   cdsDBList.CreateDataSet;
+  cboRemoteHost.Items.Add('develop.knowall.cn');
   //cboRemoteHost.Items.Add('127.0.0.1:8080');
   //cboRemoteHost.Items.Add('c1.knowall.cn');
   Ini := TIniFile.Create(ExtractFilePath(Application.ExeName) + 'TAppSync.ini');
   try
-    cboRemoteHost.Text := Ini.ReadString('TAppSync', 'Host', 'c1.knowall.cn');//
-    edtRemoteUser.Text := Ini.ReadString('TAppSync', 'User', '91100123');
-    //edtRemotePwd.Text := Ini.ReadString('TAppSync','Pwd','123456');
+    cboRemoteHost.Text := Ini.ReadString('TAppSync', 'Host', 'develop.knowall.cn');//
+    edtRemoteUser.Text := Ini.ReadString('TAppSync', 'User', '');
+    //edtRemotePwd.Text := Ini.ReadString('TAppSync','Pwd','');
   finally
     Ini.Free;
   end;
@@ -194,7 +195,7 @@ begin
   popShowForm.Enabled := True;
   popHideForm.Enabled := False;
   Hide;
-  ShowWindow(Application.Handle,SW_HIDE);
+  ShowWindow(Application.Handle, SW_HIDE);
 end;
 
 procedure TFrmMain.popShowFormClick(Sender: TObject);
