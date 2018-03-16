@@ -11,7 +11,8 @@ type
     { Private declarations }
     procedure CreateDBListTable;
     procedure CreateReportListTable;
-    function setReportDate(cdsTmp: TAppDataSet; const difTime,Status: Integer;const ErrorMsg: String = ''): Boolean;
+    function setReportDate(cdsTmp: TAppDataSet; const difTime, Status: Integer;const ErrorMsg: string = ''): Boolean;
+
   public
     cdsDBList: TZjhDataSet;
     cdsReportList: TZjhDataSet;
@@ -19,32 +20,14 @@ type
     procedure ReadReportList;
     procedure Init();
     procedure Destroy();
-    procedure Exec();
+    procedure Exec(); overload;
+    procedure Exec(DBUID: string); overload;
+    function getNewSQLCmd(oldSql, erpCode: string): string;
   end;
-
-  {
-  TThreadAppSync = class(TThread)
-  private
-    difTime: Integer;
-    cdsDBList: TZjhDataSet;
-    cdsReportList: TZjhDataSet;
-    procedure Init();
-    procedure ReadDBList;
-    procedure ReadReportList;
-    procedure CreateDBListTable;
-    procedure CreateReportListTable;
-    function setReportDate(cdsTmp: TAppDataSet; const difTime,Status: Integer;const ErrorMsg: String = ''): Boolean;
-  protected
-  public
-    constructor Create(CreateSuspended: Boolean); overload;
-    destructor Destroy; override;
-  public
-    procedure SetParams(difTime: Integer);
-    procedure Execute; override;
-  end;
-  }
 
 implementation
+
+uses MainFrm;
 
 { TAppSync }
 
@@ -88,6 +71,18 @@ begin
       DataType := ftWideString;
       Size := 5;
       Name := 'PortNo_';
+    end;
+    with FieldDefs.AddFieldDef do
+    begin
+      DataType := ftWideString;
+      Size := 8;
+      Name := 'ExecuteTime_';
+    end;
+    with FieldDefs.AddFieldDef do
+    begin
+      DataType := ftWideString;
+      Size := 20;
+      Name := 'ERPCode_';
     end;
     CreateDataSet;
   end;
@@ -136,7 +131,7 @@ begin
     with FieldDefs.AddFieldDef do
     begin
       DataType := ftWideString;
-      Size := 10;
+      Size := 50;
       Name := 'Ver_';
     end;
     CreateDataSet;
@@ -149,9 +144,9 @@ begin
   cdsReportList.Free;
 end;
 
-procedure TAppSync.Exec;
+procedure TAppSync.Exec(DBUID: string);
 var
-  sAccount,sPassword,sHost,DBName : String;
+  sAccount,sPassword,sHost,DBName : string;
   SQLCmd: String;
   cdsTmp: TADOQuery;
   cdsTmp1: TAppDataSet;
@@ -168,11 +163,115 @@ begin
   try
     cdsTmp.Connection := oCn;
     cdsDBList.First;
+    if cdsDBList.Locate('DBUID_', DBUID, []) then
+    begin
+      sAccount := cdsDBList.FieldByName('Account_').AsString;
+      sPassword := cdsDBList.FieldByName('Password_').AsString;
+      DBName := cdsDBList.FieldByName('Database_').AsString;
+      sHost :=  cdsDBList.FieldByName('Host_').AsString;
+      try
+        oCn.Close;
+        oCn.ConnectionString := Format('Provider=SQLOLEDB.1;Password=%s;Persist '
+          + 'Security Info=True;User ID=%s;Initial Catalog=%s;Data Source=%s',
+          [sPassword,sAccount,DBName,sHost]);
+        oCn.LoginPrompt := False;
+        oCn.Open;
+        cdsReportList.Filtered:= False;
+        cdsReportList.Filter:=Format('DBUID_=%s',[cdsDBList.FieldByName('DBUID_').AsString]);
+        cdsReportList.Filtered:=True;
+        cdsReportList.First;
+        while not cdsReportList.eof do
+        begin
+          SQLCmd := getNewSQLCmd(cdsReportList.FieldByName('Param_').AsString, cdsDBList.FieldByName('ERPCode_').AsString);
+          try
+            difTime := 0;
+            cdsTmp.Close;
+            cdsTmp.SQL.Text := SQLCmd;
+            d1 := now();
+            cdsTmp.Open;
+            difTime := Trunc(now()) - Trunc(d1);
+            if not cdsTmp.Eof then
+            begin
+              cdsTmp1 := TAppDataSet.Create;
+              try
+                cdsTmp1.LoadFrom(cdsTmp);
+                setReportDate(cdsTmp1, difTime, 1);
+              finally
+                cdsTmp1.Free;
+              end;
+            end;
+          except
+            on E: Exception do
+            begin
+              setReportDate(cdsTmp1, difTime, 0, E.Message);
+            end;
+          end;
+          cdsReportList.Next;
+        end;
+      except
+        on E: Exception do
+        begin
+          FrmMain.memBody.Lines.Add('error: ' + DBName + '-' +  E.Message);
+        end;
+      end;
+    end;
+  finally
+    oCn.Free;
+    cdsTmp.Free;
+  end;
+end;
+
+function TAppSync.getNewSQLCmd(oldSql, erpCode: string): string;
+var
+  i, j, z: Integer;
+  newSql: string;
+  function Replace(const Value, SubStr, RplStr: String): String;
+  var
+    i: Integer;
+    Data: String;
+  begin
+    Data := Value;
+    Result := '';
+    i := Pos(SubStr,data);
+    while i > 0 do
+    begin
+      Result := Result + Copy(Data,1,i-1) + RplStr;
+      Data := Copy(Data, i + Length(SubStr), Length(Data));
+      i := Pos(SubStr,Data);
+    end;
+    Result := Result + Data;
+  end;
+begin
+  newSql := oldSql;
+  if POS(UpperCase('@CorpCode'), UpperCase(oldSql))>0 then
+    newSql := Replace(oldSql,'@CorpCode', '''' + erpCode + '''');
+  Result := newSql;
+end;
+
+procedure TAppSync.Exec;
+var
+  sAccount, sPassword, sHost, DBName : string;
+  SQLCmd: String;
+  cdsTmp: TADOQuery;
+  cdsTmp1: TAppDataSet;
+  d1: TDateTime;
+  difTime: Integer;
+  oCn: TADOConnection;
+begin
+  if not cdsDBList.Active then Exit;
+  if cdsDBList.RecordCount = 0 then Exit;
+  if not cdsReportList.Active then Exit;
+  if cdsReportList.RecordCount = 0 then Exit;
+  oCn := TADOConnection.Create(nil);
+  cdsTmp := TADOQuery.Create(nil);
+  try
+    cdsTmp.Connection := oCn;
+    cdsDBList.First;
     while not cdsDBList.eof do
     begin
-      sAccount:= cdsDBList.FieldByName('Account_').AsString;
-      sPassword:= cdsDBList.FieldByName('Password_').AsString;
-      DBName:= cdsDBList.FieldByName('Database_').AsString;
+      sAccount := cdsDBList.FieldByName('Account_').AsString;
+      sPassword := cdsDBList.FieldByName('Password_').AsString;
+      DBName := cdsDBList.FieldByName('Database_').AsString;
       sHost :=  cdsDBList.FieldByName('Host_').AsString;
       try
         oCn.Close;
@@ -187,13 +286,13 @@ begin
           Continue;
         end;
       end;
-      cdsReportList.Filtered:= False;
-      cdsReportList.Filter:=Format('DBUID_=%s',[cdsDBList.FieldByName('DBUID_').AsString]);
-      cdsReportList.Filtered:=True;
+      cdsReportList.Filtered := False;
+      cdsReportList.Filter :=Format('DBUID_=%s',[cdsDBList.FieldByName('DBUID_').AsString]);
+      cdsReportList.Filtered :=True;
       cdsReportList.First;
       while not cdsReportList.eof do
       begin
-        SQLCmd := cdsReportList.FieldByName('Param_').AsString ;
+        SQLCmd := getNewSQLCmd(cdsReportList.FieldByName('Param_').AsString, cdsDBList.FieldByName('ERPCode_').AsString);
         try
           difTime := 0;
           cdsTmp.Close;
@@ -206,7 +305,7 @@ begin
             cdsTmp1 := TAppDataSet.Create;
             try
               cdsTmp1.LoadFrom(cdsTmp);
-              setReportDate(cdsTmp1, difTime,1);
+              setReportDate(cdsTmp1, difTime, 1);
             finally
               cdsTmp1.Free;
             end;
@@ -214,15 +313,13 @@ begin
         except
           on E: Exception do
           begin
-            //ShowMessage(E.Message);
-            setReportDate(cdsTmp1, difTime,0,E.Message);
+            setReportDate(cdsTmp1, difTime, 0, E.Message);
           end;
         end;
         cdsReportList.Next;
       end;
       cdsDBList.Next;
     end;
-    ShowMessage('执行完成');
   finally
     oCn.Free;
     cdsTmp.Free;
@@ -257,6 +354,8 @@ begin
           cdsDBList.FieldByName('Account_').AsString := FieldByName('Account_').AsString;
           cdsDBList.FieldByName('Password_').AsString := FieldByName('Password_').AsString;
           cdsDBList.FieldByName('PortNo_').AsString := FieldByName('PortNo_').AsString;
+          cdsDBList.FieldByName('ExecuteTime_').AsString := FieldByName('ExecuteTime_').AsString;
+          cdsDBList.FieldByName('ERPCode_').AsString := FieldByName('ERPCode_').AsString;
           cdsDBList.Post();
           Next;
         end;
@@ -296,8 +395,6 @@ begin
     ShowMessage(app.Messages);
 end;
 
-
-
 function TAppSync.setReportDate(cdsTmp: TAppDataSet; const difTime,
   Status: Integer; const ErrorMsg: String): Boolean;
 var
@@ -316,7 +413,12 @@ begin
   app.DataIn.FieldByName('Ver_').AsString := cdsReportList.FieldByName('Ver_').AsString;
   app.DataIn.FieldByName('Database_').AsString := cdsDBList.FieldByName('Database_').AsString;
   if app.Exec then
-    Result := True
+    begin
+      FrmMain.memBody.Lines.Add('Satus: ' + cdsDBList.FieldByName('Database_').AsString
+        + ' RetName:' + cdsReportList.FieldByName('RetName_').AsString + ';'
+        + ' T-Sql:' + cdsReportList.FieldByName('Param_').AsString + ' ' + ErrorMsg);
+      Result := True;
+    end
   else
     ShowMessage(app.Messages);
 end;
