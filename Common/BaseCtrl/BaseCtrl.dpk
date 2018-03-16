@@ -1,0 +1,77 @@
+package BaseCtrl;
+
+{$R *.res}
+{$R 'ZjhCtrls.dcr'}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'MIMRC BaseCtrl Runtime Package'}
+{$IMPLICITBUILD OFF}
+
+requires
+  vcl,
+  rtl,
+  xmlrtl,
+  dclmid,
+  adortl,
+  vcldb,
+  dbrtl,
+  dsnapcon,
+  dsnap,
+  inet,
+  IndyCore,
+  IndySystem,
+  IndyProtocols,
+  dbexpress,
+  DbxCommonDriver,
+  DataSnapProviderClient;
+
+contains
+  ZjhCtrls in 'ZjhCtrls.pas',
+  ScanLibCtl_TLB in 'ScanLibCtl_TLB.pas',
+  AdminLibCtl_TLB in 'AdminLibCtl_TLB.pas',
+  ImgeditLibCtl_TLB in 'ImgeditLibCtl_TLB.pas',
+  SPCOMM in 'SPCOMM.PAS',
+  CellCtrls in 'CellCtrls.pas',
+  ZLDocument in 'ZLDocument.pas',
+  ZLDocumentDlg in 'ZLDocumentDlg.pas' {DlgZLDocument},
+  P10Build in 'P10Build.pas',
+  Parser10 in 'Parser10.pas',
+  uBaseIntf in 'uBaseIntf.pas',
+  ApConst in 'ApConst.pas',
+  NullLanguage in 'NullLanguage.pas',
+  AppData in 'AppData.pas',
+  JClasses in 'JClasses.pas',
+  InfoBox in 'InfoBox.pas',
+  uBuffer in 'uBuffer.pas',
+  HRDirectory in 'HRDirectory.pas',
+  ZLFileDateTime in 'ZLFileDateTime.pas',
+  SQLServer in 'SQLServer.pas',
+  AppBean in 'AppBean.pas',
+  AppDB in 'AppDB.pas',
+  HRNavigate in 'HRNavigate.pas',
+  AppUtils3 in 'AppUtils3.pas',
+  AppDB3 in 'AppDB3.pas',
+  SOUtils3 in 'SOUtils3.pas';
+
+end.
+
+

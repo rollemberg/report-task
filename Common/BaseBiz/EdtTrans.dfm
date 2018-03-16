@@ -1,0 +1,19 @@
+object EdtTran: TEdtTran
+  Left = 241
+  Top = 123
+  BorderStyle = bsSingle
+  Caption = 'EdtTran'
+  ClientHeight = 393
+  ClientWidth = 772
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  Position = poDefault
+  OnCloseQuery = FormCloseQuery
+  PixelsPerInch = 96
+  TextHeight = 13
+end

@@ -1,0 +1,84 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{2EFE6B71-1574-4AAB-9C45-29F54514B037}</ProjectGuid>
+		</PropertyGroup>
+		<ItemGroup>
+			<Projects Include="qrep504\qrpt.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="FastRpt\FastRpt.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="BaseCtrl\BaseCtrl.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="BaseApp\BaseApp.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="BaseBiz\BaseBiz.dproj">
+				<Dependencies/>
+			</Projects>
+		</ItemGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Default.Personality.12</Borland.Personality>
+			<Borland.ProjectType/>
+			<BorlandProject>
+				<Default.Personality/>
+			</BorlandProject>
+		</ProjectExtensions>
+		<Target Name="qrpt">
+			<MSBuild Projects="qrep504\qrpt.dproj"/>
+		</Target>
+		<Target Name="qrpt:Clean">
+			<MSBuild Targets="Clean" Projects="qrep504\qrpt.dproj"/>
+		</Target>
+		<Target Name="qrpt:Make">
+			<MSBuild Targets="Make" Projects="qrep504\qrpt.dproj"/>
+		</Target>
+		<Target Name="FastRpt">
+			<MSBuild Projects="FastRpt\FastRpt.dproj"/>
+		</Target>
+		<Target Name="FastRpt:Clean">
+			<MSBuild Targets="Clean" Projects="FastRpt\FastRpt.dproj"/>
+		</Target>
+		<Target Name="FastRpt:Make">
+			<MSBuild Targets="Make" Projects="FastRpt\FastRpt.dproj"/>
+		</Target>
+		<Target Name="BaseCtrl">
+			<MSBuild Projects="BaseCtrl\BaseCtrl.dproj"/>
+		</Target>
+		<Target Name="BaseCtrl:Clean">
+			<MSBuild Targets="Clean" Projects="BaseCtrl\BaseCtrl.dproj"/>
+		</Target>
+		<Target Name="BaseCtrl:Make">
+			<MSBuild Targets="Make" Projects="BaseCtrl\BaseCtrl.dproj"/>
+		</Target>
+		<Target Name="BaseApp">
+			<MSBuild Projects="BaseApp\BaseApp.dproj"/>
+		</Target>
+		<Target Name="BaseApp:Clean">
+			<MSBuild Targets="Clean" Projects="BaseApp\BaseApp.dproj"/>
+		</Target>
+		<Target Name="BaseApp:Make">
+			<MSBuild Targets="Make" Projects="BaseApp\BaseApp.dproj"/>
+		</Target>
+		<Target Name="BaseBiz">
+			<MSBuild Projects="BaseBiz\BaseBiz.dproj"/>
+		</Target>
+		<Target Name="BaseBiz:Clean">
+			<MSBuild Targets="Clean" Projects="BaseBiz\BaseBiz.dproj"/>
+		</Target>
+		<Target Name="BaseBiz:Make">
+			<MSBuild Targets="Make" Projects="BaseBiz\BaseBiz.dproj"/>
+		</Target>
+		<Target Name="Build">
+			<CallTarget Targets="qrpt;FastRpt;BaseCtrl;BaseApp;BaseBiz"/>
+		</Target>
+		<Target Name="Clean">
+			<CallTarget Targets="qrpt:Clean;FastRpt:Clean;BaseCtrl:Clean;BaseApp:Clean;BaseBiz:Clean"/>
+		</Target>
+		<Target Name="Make">
+			<CallTarget Targets="qrpt:Make;FastRpt:Make;BaseCtrl:Make;BaseApp:Make;BaseBiz:Make"/>
+		</Target>
+		<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+	</Project>
