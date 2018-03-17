@@ -167,6 +167,8 @@ end;
 procedure TFrmMain.N3Click(Sender: TObject);
 begin
   memBody.Visible := not memBody.Visible;
+  cboRemoteHost.Visible := not cboRemoteHost.Visible;
+  Label4.Visible := not Label4.Visible;
 end;
 
 procedure TFrmMain.OnTrayMessage(var Msg: TMessage);

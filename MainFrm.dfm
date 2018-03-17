@@ -3182,7 +3182,7 @@ object FrmMain: TFrmMain
     TabOrder = 0
     object Label4: TLabel
       Left = 270
-      Top = 172
+      Top = 160
       Width = 73
       Height = 13
       AutoSize = False
@@ -3240,8 +3240,8 @@ object FrmMain: TFrmMain
     end
     object cboRemoteHost: TComboBox
       Left = 329
-      Top = 169
-      Width = 130
+      Top = 156
+      Width = 144
       Height = 21
       TabOrder = 1
       Visible = False
