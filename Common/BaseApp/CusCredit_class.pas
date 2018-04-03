@@ -1,0 +1,390 @@
+unit CusCredit_class;
+{$I ERPVersion.Inc}
+
+interface
+{$IFDEF ERP2011}
+uses
+  Classes, SysUtils, ADODB, DateUtils, ApConst, AppBean, NetRegistry, DB;
+
+type
+  THRCusCredit = class(TAppBean)
+  private
+    FCusCode: String;
+    FOwnerCode: String;
+    FSignUser: String;
+    FCreditLevel: Integer;
+    FGroupControl: Integer;
+    cdsCus: TAppQuery;
+    FIsTicker: Boolean;
+    procedure SetCusCode(const Value: String);
+    procedure SetIsTicker(const Value: Boolean);
+    function SysReadInit(const Root, Key: String;
+      Default: Integer = 0): Integer;
+    function GetCurDatabase: String;
+    function GetExRate(const Currency: String; CurDate: TDateTime;
+      Const GroupControl: Integer; const StdRate: Integer = -1): Double;
+    procedure AppendToCreditList(const TBNo_: String; const TBDate: TDateTime;
+      const UsedAmount, Amount: Double);
+  public
+    OverCredit: Double;
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
+    function Execute(const Param: OleVariant; var Data: OleVariant): Boolean;
+      override;
+    function GetCreditLevel(const ACusCode: String): Integer;
+    function GetSignUser(const ACusCode: String): String;
+    function UpdateCredit(const Value: Double; const Currency, TBNo: String;
+      const TBDate: TDateTime; const WorkFlow: Boolean = False): Boolean;
+    function AllowCredit(const Value: Double; const Currency: String;
+      const TBDate: TDateTime): Boolean;
+    property CusCode: String read FCusCode write SetCusCode;
+    property IsTicker: Boolean read FIsTicker write SetIsTicker;
+  end;
+{$ENDIF}
+
+implementation
+
+{$IFDEF ERP2011}
+uses SQLServer;
+
+{ THRCusCredit }
+
+constructor THRCusCredit.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  cdsCus := TAppQuery.Create(nil);
+  IsTicker := False;
+end;
+
+destructor THRCusCredit.Destroy;
+begin
+  FreeAndNil(cdsCus);
+  inherited;
+end;
+
+function THRCusCredit.GetCreditLevel(const ACusCode: String): Integer;
+begin
+  cdsCus.Connection := Self.Connection;
+  SetCusCode(ACusCode);
+  Result := FCreditLevel;
+end;
+
+function THRCusCredit.GetSignUser(const ACusCode: String): String;
+begin
+  cdsCus.Connection := Self.Connection;
+  SetCusCode(ACusCode);
+  Result := FSignUser;
+end;
+
+procedure THRCusCredit.SetCusCode(const Value: String);
+begin
+  FCusCode := Value;
+  with cdsCus do
+  begin
+    Active := False;
+    FCreditLevel := -1;
+    if Value <> '' then
+    begin
+      Connection := Self.Connection;
+      SQL.Text := Format('select * From CusCredit Where CusCode_=''%s''',
+        [CusCode]);
+      Open;
+      if not Eof then
+      begin
+        FCreditLevel := FieldByName('CreditLevel_').AsInteger;
+        FGroupControl := FieldByName('GroupControl_').AsInteger;
+        FOwnerCode := FieldByName('OwnerCode_').AsString;
+        FSignUser := FieldByName('SignUser_').AsString;
+      end
+      else
+      begin
+        FCreditLevel := 0;
+        FGroupControl := 0;
+        FOwnerCode := '';
+        FSignUser := '';
+      end;
+    end;
+  end;
+end;
+
+procedure THRCusCredit.AppendToCreditList(const TBNo_: String;
+  const TBDate: TDateTime; const UsedAmount, Amount: Double);
+var
+  sSQL: String;
+  ss: TSQLServer;
+begin
+  with cdsCus do
+  begin
+    sSQL := Format('Insert into CreditList(OwnerCode_, CorpCode_, CusCode_, ' +
+        'GroupControl_, AllowAmount_, TBNo_, TBDate_, UsedAmount_, Amount_, ' +
+        'AppUser_, AppDate_) values(''%s'', ''%s'', ''%s'', %d, %f, ''%s'', ''%s'', '
+        + '%f, %f, ''%s'', getdate())', [FOwnerCode, GetCurDatabase, CusCode,
+      FGroupControl, FieldByName('AllowAmount_').AsFloat, TBNo_,
+      FormatDateTime('YYYY/MM/DD', TBDate), UsedAmount, Amount,
+      Self.Session.UserCode]);
+    if FGroupControl = 2 then // 取总部汇率
+    begin
+      ss := TSQLServer.Create;
+      try
+        ss.Open('Common');
+        ss.Connection.Execute(sSQL);
+      finally
+        ss.Free;
+      end;
+    end
+    else
+      Self.Connection.Execute(sSQL);
+  end;
+end;
+
+function THRCusCredit.UpdateCredit(const Value: Double;
+  const Currency, TBNo: String; const TBDate: TDateTime;
+  const WorkFlow: Boolean = False): Boolean;
+var
+  n1, n2: Double;
+  ss: TSQLServer;
+  cdsTmp: TAppQuery;
+  function ResultOf(DataSet: TDataSet): Boolean;
+  begin
+    Result := False;
+    with DataSet do
+    begin
+      if not Eof then
+      begin
+        n1 := FieldByName('UsedAmount_').AsFloat;
+        // 重新取汇率:
+        n2 := Value * GetExRate(Currency, TBDate, FGroupControl);
+        // 如果是收款并且识在途票据为已收款则信用额度增加.反之不处理.
+        if IsTicker and (not FieldByName('IncludeTicket_').AsBoolean) then
+          Result := False
+        else
+          begin // if WorkFlow = True 则为已经签核的部份,不再进行限制.
+            if (FieldByName('AllowAmount_').AsFloat >= (n1 + n2)) or (WorkFlow) then
+              begin
+                Edit;
+                FieldByName('UsedAmount_').AsFloat := FieldByName('UsedAmount_')
+                  .AsFloat + n2;
+                Post;
+                OverCredit := 0;
+                Result := True;
+                // 增加额度明细到CreditList
+                AppendToCreditList(TBNo, TBDate, n1, n2);
+              end
+            else
+              begin
+                OverCredit := (n1 + n2) - FieldByName('AllowAmount_').AsFloat;
+                Result := False;
+              end;
+          end;
+      end;
+    end;
+  end;
+begin
+  with cdsCus do
+  begin
+    if not Active then
+      raise Exception.Create(ChineseAsString('RS001','错误地调用类THRCusCredit: 没有打开数据集！'));
+    Result := True; // 若没有登记则默认为不控制
+    if not Eof then
+    begin
+      // Add by caojianping 2009/02/04
+      if FieldByName('GroupControl_').AsInteger <> 0 then
+        begin
+          ss := TSQLServer.Create;
+          cdsTmp := TAppQuery.Create(nil);
+          try
+            if FieldByName('GroupControl_').AsInteger = 2 then
+              begin
+                ss.Open('Common');
+                cdsTmp.Connection := ss.Connection;
+              end
+            else
+              cdsTmp.Connection := Self.Connection;
+            cdsTmp.SQL.Text := Format(
+              'Select * From CusCredit Where CusCode_=''%s''',
+              [FieldByName('OwnerCode_').AsString]);
+            cdsTmp.Open;
+            Result := ResultOf(cdsTmp);
+          finally
+            cdsTmp.Free;
+            ss.Free;
+          end;
+        end
+      else
+        Result := ResultOf(cdsCus);
+    end;
+  end;
+end;
+
+function THRCusCredit.GetExRate(const Currency: String; CurDate: TDateTime;
+  const GroupControl: Integer; const StdRate: Integer): Double;
+var
+  SQLCmd: String;
+  cdsMoney: TAppQuery;
+  RateType: Integer;
+  ss: TSQLServer;
+begin
+  Result := 0;
+  if Trim(Currency) = '' then
+    Exit;
+  if StdRate = -1 then
+    RateType := SysReadInit('system', 'SYS00008', 0)
+  else
+    RateType := StdRate;
+  case RateType of
+    0: // 固定汇率
+      SQLCmd := 'Select Rate_ From Money Where StartDate_ is NULL';
+    1: // 浮动汇率
+      SQLCmd := Format('Select Code_,Name_,Rate_ From Money Where ' +
+          'StartDate_=''%s''', [FormatDateTime('YYYY/MM/DD', CurDate)]);
+    2: // 月初
+      SQLCmd := Format('Select Code_,Name_,Rate_ From Money Where ' +
+          'StartDate_=''%s''', [FormatDateTime('YYYY/MM/DD',
+          (CurDate - DayOf(CurDate) + 1))]);
+  else // 三旬汇率
+    if DayOf(CurDate) > 20 then
+      SQLCmd := Format('Select Code_,Name_,Rate_ From Money Where ' +
+          'StartDate_=''%s''', [FormatDateTime('YYYY/MM/21', CurDate)])
+    else if DayOf(CurDate) > 10 then
+      SQLCmd := Format('Select Code_,Name_,Rate_ From Money Where ' +
+          'StartDate_=''%s''', [FormatDateTime('YYYY/MM/11', CurDate)])
+    else
+      SQLCmd := Format('Select Code_,Name_,Rate_ From Money Where ' +
+          'StartDate_=''%s''', [FormatDateTime('YYYY/MM/01', CurDate)]);
+  end;
+  ss := TSQLServer.Create;
+  cdsMoney := TAppQuery.Create(nil);
+  try
+    with cdsMoney do
+    begin
+      if GroupControl = 2 then // 取总部汇率
+      begin
+        ss.Open('Common');
+        Connection := ss.Connection;
+      end
+      else
+        Connection := Self.Connection;
+      SQL.Text := SQLCmd + ' and Code_=''' + Currency + '''';
+      Open;
+      if not Eof then
+        Result := FieldByName('Rate_').AsFloat;
+      Close;
+    end;
+  finally
+    FreeAndNil(cdsMoney);
+    ss.Free;
+  end;
+  if Result <= 0 then
+    raise Exception.Create(Format(ChineseAsString('RS003','没有取到 %s 于 %s 的汇率，请检查设置！'),
+          [Currency, FormatDateTime('YYYY/MM/DD',CurDate)]));
+end;
+
+function THRCusCredit.AllowCredit(const Value: Double; const Currency: String;
+  const TBDate: TDateTime): Boolean;
+var
+  n1, n2: Double;
+  cdsTmp: TAppQuery;
+  ss: TSQLServer;
+  function ResultOf(DataSet: TDataSet): Boolean;
+  begin
+    Result := False;
+    with DataSet do
+    begin
+      if not Eof then
+      begin
+        n1 := FieldByName('UsedAmount_').AsFloat;
+        n2 := Value * GetExRate(Currency, TBDate, FGroupControl);
+        if FieldByName('AllowAmount_').AsFloat >= (n1 + n2) then
+        begin
+          OverCredit := 0;
+          Result := True;
+        end
+        else
+        begin
+          OverCredit := (n1 + n2) - FieldByName('AllowAmount_').AsFloat;
+          Result := False;
+        end;
+      end;
+    end;
+  end;
+
+begin
+  with cdsCus do
+  begin
+    if not Active then
+      Raise Exception.Create(ChineseAsString('RS002','错误地调用类THRCusCredit: 没有打开数据集！'));
+    Result := True; // 若没有登记则默认为不控制
+    if not Eof then
+    begin
+      // Add by caojianping 2009/02/04
+      if FieldByName('GroupControl_').AsInteger <> 0 then
+      begin
+        ss := TSQLServer.Create;
+        cdsTmp := TAppQuery.Create(nil);
+        try
+          if FieldByName('GroupControl_').AsInteger = 2 then
+          begin
+            ss.Open('Common');
+            cdsTmp.Connection := ss.Connection;
+          end
+          else
+            cdsTmp.Connection := Self.Connection;
+          cdsTmp.SQL.Text := Format(
+            'Select * From CusCredit Where CusCode_=''%s''',
+            [FieldByName('OwnerCode_').AsString]);
+          cdsTmp.Open;
+          Result := ResultOf(cdsTmp);
+        finally
+          cdsTmp.Free;
+          ss.Free;
+        end;
+      end
+      else
+        Result := ResultOf(cdsCus);
+    end;
+  end;
+end;
+
+function THRCusCredit.Execute(const Param: OleVariant;
+  var Data: OleVariant): Boolean;
+begin
+  Result := False;
+end;
+
+procedure THRCusCredit.SetIsTicker(const Value: Boolean);
+begin
+  FIsTicker := Value;
+end;
+
+function THRCusCredit.SysReadInit(const Root, Key: String;
+  Default: Integer): Integer;
+var
+  nreg: TNetRegistry;
+begin
+  nreg := TNetRegistry.Create(Self);
+  try
+    Result := nreg.ReadInit(Root, Key, Default);
+  finally
+    nreg.Free;
+  end;
+end;
+
+function THRCusCredit.GetCurDatabase: String;
+var
+  str: String;
+const
+  Flag = 'Initial Catalog=';
+begin
+  Result := '';
+  str := Self.Session.Connection.ConnectionString;
+  if Pos(Flag, str) > 0 then
+  begin
+    str := Copy(str, Pos(Flag, str) + Length(Flag), Length(str));
+    if Pos(';', str) > 0 then
+      str := Copy(str, 1, Pos(';', str) - 1);
+  end;
+  Result := str;
+end;
+{$ENDIF}
+
+end.

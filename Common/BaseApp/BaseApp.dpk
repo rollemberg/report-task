@@ -1,0 +1,63 @@
+package BaseApp;
+
+{$R *.res}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'MIMRC BaseApp Runtime Package'}
+{$IMPLICITBUILD ON}
+
+requires
+  rtl,
+  vcl,
+  xmlrtl,
+  dbrtl,
+  dsnap,
+  dsnapcon,
+  vclimg,
+  adortl,
+  IndyCore,
+  IndySystem,
+  IndyProtocols,
+  BaseCtrl;
+
+contains
+  uAppBean in 'uAppBean.pas',
+  AppSessionData in 'AppSessionData.pas',
+  ServerLang in 'ServerLang.pas',
+  AppResource in 'AppResource.pas',
+  WorkFlows in 'WorkFlows.pas',
+  MailBox_class in 'MailBox_class.pas',
+  BuilderTBNo_class in 'BuilderTBNo_class.pas',
+  AppUtils in 'AppUtils.pas',
+  CusCredit_class in 'CusCredit_class.pas',
+  CalMrpNum_class in 'CalMrpNum_class.pas',
+  AppSession_DataIn in 'AppSession_DataIn.pas',
+  AppSession_DataOut in 'AppSession_DataOut.pas',
+  AppWorkflowUser in 'AppWorkflowUser.pas',
+  AppRegister_DataOut in 'AppRegister_DataOut.pas',
+  WFSend in 'WFSend.pas';
+
+end.
+
+
+
+

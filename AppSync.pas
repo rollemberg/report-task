@@ -12,7 +12,7 @@ type
     procedure CreateDBListTable;
     procedure CreateReportListTable;
     function setReportDate(cdsTmp: TAppDataSet; const difTime, Status: Integer;const ErrorMsg: string = ''): Boolean;
-
+    function getNewSQLCmd(oldSql, erpCode: string): string;
   public
     cdsDBList: TZjhDataSet;
     cdsReportList: TZjhDataSet;
@@ -22,7 +22,6 @@ type
     procedure Destroy();
     procedure Exec(); overload;
     procedure Exec(DBUID: string); overload;
-    function getNewSQLCmd(oldSql, erpCode: string): string;
   end;
 
 implementation
@@ -146,7 +145,7 @@ end;
 
 procedure TAppSync.Exec(DBUID: string);
 var
-  sAccount,sPassword,sHost,DBName : string;
+  sAccount, sPassword, sHost, DBName : string;
   SQLCmd: String;
   cdsTmp: TADOQuery;
   cdsTmp1: TAppDataSet;
@@ -155,9 +154,9 @@ var
   oCn: TADOConnection;
 begin
   if not cdsDBList.Active then Exit;
-  if cdsDBList.RecordCount =0 then Exit;
+  if cdsDBList.RecordCount = 0 then Exit;
   if not cdsReportList.Active then Exit;
-  if cdsReportList.RecordCount =0 then Exit;
+  if cdsReportList.RecordCount = 0 then Exit;
   oCn := TADOConnection.Create(nil);
   cdsTmp := TADOQuery.Create(nil);
   try
@@ -176,9 +175,9 @@ begin
           [sPassword,sAccount,DBName,sHost]);
         oCn.LoginPrompt := False;
         oCn.Open;
-        cdsReportList.Filtered:= False;
-        cdsReportList.Filter:=Format('DBUID_=%s',[cdsDBList.FieldByName('DBUID_').AsString]);
-        cdsReportList.Filtered:=True;
+        cdsReportList.Filtered := False;
+        cdsReportList.Filter := Format('DBUID_=%s', [cdsDBList.FieldByName('DBUID_').AsString]);
+        cdsReportList.Filtered := True;
         cdsReportList.First;
         while not cdsReportList.eof do
         begin
@@ -277,7 +276,7 @@ begin
         oCn.Close;
         oCn.ConnectionString := Format('Provider=SQLOLEDB.1;Password=%s;Persist '
           + 'Security Info=True;User ID=%s;Initial Catalog=%s;Data Source=%s',
-          [sPassword,sAccount,DBName,sHost]);
+          [sPassword, sAccount, DBName, sHost]);
         oCn.LoginPrompt := False;
         oCn.Open;
       except
@@ -287,7 +286,7 @@ begin
         end;
       end;
       cdsReportList.Filtered := False;
-      cdsReportList.Filter :=Format('DBUID_=%s',[cdsDBList.FieldByName('DBUID_').AsString]);
+      cdsReportList.Filter := Format('DBUID_=%s', [cdsDBList.FieldByName('DBUID_').AsString]);
       cdsReportList.Filtered :=True;
       cdsReportList.First;
       while not cdsReportList.eof do
@@ -422,4 +421,5 @@ begin
   else
     ShowMessage(app.Messages);
 end;
+
 end.

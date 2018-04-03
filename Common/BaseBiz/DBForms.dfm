@@ -1,0 +1,20 @@
+object DBForm: TDBForm
+  Left = 211
+  Top = 113
+  BorderStyle = bsSingle
+  Caption = 'DBForm'
+  ClientHeight = 393
+  ClientWidth = 772
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  Position = poDefault
+  Scaled = False
+  OnClose = FormClose
+  PixelsPerInch = 96
+  TextHeight = 13
+end
