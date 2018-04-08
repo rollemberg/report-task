@@ -1,0 +1,5 @@
+[ErpTools]
+Server=ANDY-PC\SQL2008
+Database=Airlux
+Account=sa
+Password=
