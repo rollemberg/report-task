@@ -1,0 +1,53 @@
+package ServiceIM;
+
+{$R *.res}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$RUNONLY}
+{$IMPLICITBUILD ON}
+
+requires
+  rtl,
+  vcl,
+  vclimg,
+  xmlrtl,
+  dbrtl,
+  dsnap,
+  vcldb,
+  dsnapcon,
+  adortl,
+  BaseCtrl,
+  BaseApp;
+
+contains
+  AppIMGetFirends in 'AppIMGetFirends.pas',
+  AppIMGetDepts in 'AppIMGetDepts.pas',
+  AppIMCreateGroup in 'AppIMCreateGroup.pas',
+  AppIMCreateRecord in 'AppIMCreateRecord.pas',
+  AppIMReadRecord in 'AppIMReadRecord.pas',
+  AppIMGetRecords in 'AppIMGetRecords.pas',
+  AppIMCreateGroupByDept in 'AppIMCreateGroupByDept.pas',
+  AppIMGetGroupInfo in 'AppIMGetGroupInfo.pas',
+  AppIMSetGroupInfo in 'AppIMSetGroupInfo.pas',
+  AppIMGroupInfo_Data in 'AppIMGroupInfo_Data.pas';
+
+end.

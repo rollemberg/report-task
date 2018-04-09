@@ -2127,6 +2127,7 @@ begin
     varLongWord: Result := TSuperObject.Create(VLongWord);
     varInt64:    Result := TSuperObject.Create(VInt64);
     varString:   Result := TSuperObject.Create(SOString(AnsiString(VString)));
+    273:         Result := TSuperObject.Create(VDouble);
     {$if declared(varUString)}
     varUString:  Result := TSuperObject.Create(SOString(string(VUString)));
     {$ifend}

@@ -102,7 +102,8 @@ type
   function HttpObject(const service: string): IHttpObject;
   //登录到地藤系统，可重复调用
   function loginToVine: Boolean; overload;
-  function loginToVine(const Account, Password: string): Boolean; overload;
+  function loginToVine(Account,Password: String): Boolean; overload;
+
   //写入日志
   procedure WriteLog(const AText: string);
 
@@ -442,10 +443,10 @@ begin
     raise Exception.Create(app.Messages);
 end;
 
-
-function loginToVine(const Account, Password: string): Boolean;
+function loginToVine(Account,Password:String): Boolean;
 var
   app: IAppService;
+  corpNo: String;
 begin
   if __SessionID <> '' then
   begin
@@ -459,6 +460,7 @@ begin
   app.DataIn.Head.FieldByName('ClientName_').AsString := 'ERP系统';
   if app.Exec then
     begin
+      corpNo := app.DataOut.Head.FieldByName('CorpNo_').AsString;
       __SessionID := app.DataOut.Head.FieldByName('SessionID_').AsString;
       Result := true;
     end

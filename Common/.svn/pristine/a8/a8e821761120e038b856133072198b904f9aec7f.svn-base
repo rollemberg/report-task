@@ -1,0 +1,132 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{2EFE6B71-1574-4AAB-9C45-29F54514B037}</ProjectGuid>
+		</PropertyGroup>
+		<ItemGroup>
+			<Projects Include="qrep504\qrpt.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="FastRpt\FastRpt.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="BaseCtrl\BaseCtrl.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="BaseApp\BaseApp.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="BaseBiz\BaseBiz.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="..\..\Kernel6\Kernel\Security\Security.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="..\..\Kernel6\Kernel\ServiceBase\ServiceBase.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="..\..\Kernel6\Kernel\AppProtect\AppProtect.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="..\..\Kernel6\Kernel\App2011\App2011.dproj">
+				<Dependencies/>
+			</Projects>
+		</ItemGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Default.Personality.12</Borland.Personality>
+			<Borland.ProjectType/>
+			<BorlandProject>
+				<Default.Personality/>
+			</BorlandProject>
+		</ProjectExtensions>
+		<Target Name="qrpt">
+			<MSBuild Projects="qrep504\qrpt.dproj"/>
+		</Target>
+		<Target Name="qrpt:Clean">
+			<MSBuild Targets="Clean" Projects="qrep504\qrpt.dproj"/>
+		</Target>
+		<Target Name="qrpt:Make">
+			<MSBuild Targets="Make" Projects="qrep504\qrpt.dproj"/>
+		</Target>
+		<Target Name="FastRpt">
+			<MSBuild Projects="FastRpt\FastRpt.dproj"/>
+		</Target>
+		<Target Name="FastRpt:Clean">
+			<MSBuild Targets="Clean" Projects="FastRpt\FastRpt.dproj"/>
+		</Target>
+		<Target Name="FastRpt:Make">
+			<MSBuild Targets="Make" Projects="FastRpt\FastRpt.dproj"/>
+		</Target>
+		<Target Name="BaseCtrl">
+			<MSBuild Projects="BaseCtrl\BaseCtrl.dproj"/>
+		</Target>
+		<Target Name="BaseCtrl:Clean">
+			<MSBuild Targets="Clean" Projects="BaseCtrl\BaseCtrl.dproj"/>
+		</Target>
+		<Target Name="BaseCtrl:Make">
+			<MSBuild Targets="Make" Projects="BaseCtrl\BaseCtrl.dproj"/>
+		</Target>
+		<Target Name="BaseApp">
+			<MSBuild Projects="BaseApp\BaseApp.dproj"/>
+		</Target>
+		<Target Name="BaseApp:Clean">
+			<MSBuild Targets="Clean" Projects="BaseApp\BaseApp.dproj"/>
+		</Target>
+		<Target Name="BaseApp:Make">
+			<MSBuild Targets="Make" Projects="BaseApp\BaseApp.dproj"/>
+		</Target>
+		<Target Name="BaseBiz">
+			<MSBuild Projects="BaseBiz\BaseBiz.dproj"/>
+		</Target>
+		<Target Name="BaseBiz:Clean">
+			<MSBuild Targets="Clean" Projects="BaseBiz\BaseBiz.dproj"/>
+		</Target>
+		<Target Name="BaseBiz:Make">
+			<MSBuild Targets="Make" Projects="BaseBiz\BaseBiz.dproj"/>
+		</Target>
+		<Target Name="Security">
+			<MSBuild Projects="..\..\Kernel6\Kernel\Security\Security.dproj"/>
+		</Target>
+		<Target Name="Security:Clean">
+			<MSBuild Targets="Clean" Projects="..\..\Kernel6\Kernel\Security\Security.dproj"/>
+		</Target>
+		<Target Name="Security:Make">
+			<MSBuild Targets="Make" Projects="..\..\Kernel6\Kernel\Security\Security.dproj"/>
+		</Target>
+		<Target Name="ServiceBase">
+			<MSBuild Projects="..\..\Kernel6\Kernel\ServiceBase\ServiceBase.dproj"/>
+		</Target>
+		<Target Name="ServiceBase:Clean">
+			<MSBuild Targets="Clean" Projects="..\..\Kernel6\Kernel\ServiceBase\ServiceBase.dproj"/>
+		</Target>
+		<Target Name="ServiceBase:Make">
+			<MSBuild Targets="Make" Projects="..\..\Kernel6\Kernel\ServiceBase\ServiceBase.dproj"/>
+		</Target>
+		<Target Name="AppProtect">
+			<MSBuild Projects="..\..\Kernel6\Kernel\AppProtect\AppProtect.dproj"/>
+		</Target>
+		<Target Name="AppProtect:Clean">
+			<MSBuild Targets="Clean" Projects="..\..\Kernel6\Kernel\AppProtect\AppProtect.dproj"/>
+		</Target>
+		<Target Name="AppProtect:Make">
+			<MSBuild Targets="Make" Projects="..\..\Kernel6\Kernel\AppProtect\AppProtect.dproj"/>
+		</Target>
+		<Target Name="App2011">
+			<MSBuild Projects="..\..\Kernel6\Kernel\App2011\App2011.dproj"/>
+		</Target>
+		<Target Name="App2011:Clean">
+			<MSBuild Targets="Clean" Projects="..\..\Kernel6\Kernel\App2011\App2011.dproj"/>
+		</Target>
+		<Target Name="App2011:Make">
+			<MSBuild Targets="Make" Projects="..\..\Kernel6\Kernel\App2011\App2011.dproj"/>
+		</Target>
+		<Target Name="Build">
+			<CallTarget Targets="qrpt;FastRpt;BaseCtrl;BaseApp;BaseBiz;Security;ServiceBase;AppProtect;App2011"/>
+		</Target>
+		<Target Name="Clean">
+			<CallTarget Targets="qrpt:Clean;FastRpt:Clean;BaseCtrl:Clean;BaseApp:Clean;BaseBiz:Clean;Security:Clean;ServiceBase:Clean;AppProtect:Clean;App2011:Clean"/>
+		</Target>
+		<Target Name="Make">
+			<CallTarget Targets="qrpt:Make;FastRpt:Make;BaseCtrl:Make;BaseApp:Make;BaseBiz:Make;Security:Make;ServiceBase:Make;AppProtect:Make;App2011:Make"/>
+		</Target>
+		<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+	</Project>

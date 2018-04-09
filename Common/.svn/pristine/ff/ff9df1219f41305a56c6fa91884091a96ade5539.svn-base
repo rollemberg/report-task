@@ -1,0 +1,98 @@
+package BaseBiz;
+
+{$R *.res}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO ON}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DESCRIPTION 'MIMRC BaseBiz Runtime Package'}
+{$IMPLICITBUILD OFF}
+
+requires
+  vcl,
+  rtl,
+  dbrtl,
+  dsnapcon,
+  dsnap,
+  vcldb,
+  adortl,
+  dclmid,
+  dcldb,
+  vcldesigner,
+  designide,
+  vclactnband,
+  vclx,
+  designdgm,
+  dclstd,
+  xmlrtl,
+  inet,
+  qrpt,
+  bdertl,
+  vclie,
+  VclSmp,
+  dbexpress,
+  DbxCommonDriver,
+  DataSnapProviderClient,
+  IndyCore,
+  IndySystem,
+  IndyProtocols,
+  BaseCtrl;
+
+contains
+  Word2000,
+  Excel2000,
+  VBIDE2000,
+  Office2000,
+  uSelect in 'uSelect.pas',
+  DocCtrls in 'DocCtrls.pas',
+  ErpTools in 'ErpTools.pas',
+  DBForms in 'DBForms.pas' {DBForm},
+  AppService in 'AppService.pas',
+  uHRIP in 'uHRIP.pas',
+  FunctionManager in 'FunctionManager.pas',
+  FunctionConfig in 'FunctionConfig.pas',
+  MainData in 'MainData.pas',
+  CusPartUPFra in 'CusPartUPFra.pas' {FraCusPartUP: TFrame},
+  DatetimeSelect in 'DatetimeSelect.pas' {SelectDatetime},
+  DocumentFra in 'DocumentFra.pas' {FraDocument: TFrame},
+  EdtTrans in 'EdtTrans.pas' {EdtTran},
+  FlowFra in 'FlowFra.pas' {FraFlow: TFrame},
+  MakeParamFra in 'MakeParamFra.pas' {FraMakeParam: TFrame},
+  MakeProcessFra in 'MakeProcessFra.pas' {FraMakeProcess: TFrame},
+  MemoFra in 'MemoFra.pas' {FraMemo: TFrame},
+  OrdDetailFra in 'OrdDetailFra.pas' {FraOrdDetail: TFrame},
+  OrdMarkFra in 'OrdMarkFra.pas' {FraOrdMark: TFrame},
+  PartPackageFra in 'PartPackageFra.pas' {FraPartPackage: TFrame},
+  SchTrans in 'SchTrans.pas' {SchTran},
+  SearchFra in 'SearchFra.pas' {FraSearch: TFrame},
+  SelCodeFrm in 'SelCodeFrm.pas' {SelectDialog},
+  STDBOMFra in 'STDBOMFra.pas' {FraSTDBOM: TFrame},
+  StockCWFra in 'StockCWFra.pas' {FraStockCW: TFrame},
+  SupPartUPFra in 'SupPartUPFra.pas' {FraSupPartUP: TFrame},
+  VirForms in 'VirForms.pas' {VirForm},
+  phpService in 'phpService.pas',
+  xsdRecordSet in 'xsdRecordSet.pas',
+  KnowAll in 'KnowAll.pas',
+  MessageDialog in 'MessageDialog.pas' {DialogMessage},
+  AppUtils2 in 'AppUtils2.pas',
+  SOUtils in 'SOUtils.pas',
+  AppDB2 in 'AppDB2.pas';
+
+end.
