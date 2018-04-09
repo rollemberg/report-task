@@ -40,7 +40,6 @@ type
     BitBtn3: TBitBtn;
     BitBtn4: TBitBtn;
     oCn: TADOConnection;
-    ChkPur: TCheckBox;
     Label1: TLabel;
     EdtCorp: TEdit;
     procedure FormCreate(Sender: TObject);
@@ -233,7 +232,7 @@ begin
   Timer1.Enabled := False;
   TSync := TAppSync.Create;
   try
-    if ChkPur.Checked then TSync.SynExec(oCn);
+    TSync.SynExec(oCn);
   finally
     TSync.Free;
     Timer1.Enabled := True;

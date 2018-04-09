@@ -3342,20 +3342,12 @@ object FrmMain: TFrmMain
       Kind = bkClose
       TabOrder = 1
     end
-    object ChkPur: TCheckBox
-      Left = 144
-      Top = 7
-      Width = 97
-      Height = 17
-      Caption = #37319#36141#21333#21516#27493
-      TabOrder = 2
-    end
     object EdtCorp: TEdit
       Left = 65
       Top = 5
       Width = 58
       Height = 21
-      TabOrder = 3
+      TabOrder = 2
     end
   end
   object PopupMenu1: TPopupMenu
