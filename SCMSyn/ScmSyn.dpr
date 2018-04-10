@@ -4,7 +4,9 @@ uses
   Forms,
   MainFrm in 'MainFrm.pas' {FrmMain},
   SetConnFrm in 'SetConnFrm.pas' {FrmSetConn},
-  AppSync in 'AppSync.pas';
+  AppSync in 'AppSync.pas',
+  CustomSync in 'CustomSync.pas',
+  SyncPur in 'SyncPur.pas';
 
 {$R *.res}
 

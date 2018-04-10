@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, AppUtils2, Grids, DBGrids, DB, DBClient, ZjhCtrls,
   Buttons, ComCtrls, ADODB, AppDB2, AppSync,IniFiles, Menus,ShellAPI,Tlhelp32,
-  jpeg;
+  jpeg, CustomSync;
 
 type
   TFrmMain = class(TForm)
@@ -42,6 +42,7 @@ type
     oCn: TADOConnection;
     Label1: TLabel;
     EdtCorp: TEdit;
+    Timer2: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure BtnOpenClick(Sender: TObject);
     procedure C1Click(Sender: TObject);
@@ -50,11 +51,14 @@ type
     procedure N3Click(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
+    procedure Timer2Timer(Sender: TObject);
   private
     { Private declarations }
     TrayIconData: TNotifyIconData;
     Ini: TIniFile;
     procedure OnTrayMessage(var Msg: TMessage); message WM_USER + 100;
+    function call(intf: ISyncItem; dataOut: TAppDataSet): Boolean;
+    procedure updateSyncStatus(syncID, newStatus: Integer;value: String);
   public
     { Public declarations }
     function KillTask(ExeFileName:string):boolean;
@@ -65,7 +69,7 @@ var
 
 implementation
 
-uses SetConnFrm;
+uses SetConnFrm, SyncPur;
 
 {$R *.dfm}
 
@@ -117,6 +121,7 @@ begin
   else
     memBody.Lines.Add('登录成功');
   timer1.Enabled := True;
+  timer2.Enabled := True;
   BtnOpen.Enabled := not dReadOnly;
   BitBtn3.Enabled := not dReadOnly;
   cboRemoteHost.Enabled := not dReadOnly;
@@ -127,6 +132,19 @@ end;
 procedure TFrmMain.C1Click(Sender: TObject);
 begin
   Close;
+end;
+
+function TFrmMain.call(intf: ISyncItem; dataOut: TAppDataSet): Boolean;
+begin
+  intf.setDataOut(dataOut);
+  Result := intf.execSync;
+  //回写到服务器
+  if Result then
+    begin
+      updateSyncStatus(dataOut.Head.FieldByName('_SyncUID_').AsInteger, 1, '执行成功！');
+    end
+  else
+    updateSyncStatus(dataOut.Head.FieldByName('_SyncUID_').AsInteger, 2, '执行失败！');
 end;
 
 procedure TFrmMain.FormCreate(Sender: TObject);
@@ -237,6 +255,48 @@ begin
     TSync.Free;
     Timer1.Enabled := True;
   end;
+end;
+
+procedure TFrmMain.Timer2Timer(Sender: TObject);
+var
+  app: IAppService;
+  syncpur: TSyncPur;
+begin
+  Timer2.Enabled := False;
+  try
+    app := Service('TAppSyncERP.download');
+    if app.Exec then
+    begin
+      if not app.DataOut.Head.FieldDefs.Exists('_SyncUID_') then
+        Exit;
+      if app.DataOut.Head.FieldByName('_SyncProject_').AsString = 'e_PurB' then
+      begin
+        syncpur := TSyncPur.Create(Self);
+        if call(syncpur as ISyncItem, app.DataOut) then
+          FrmMain.memBody.Lines.Add('执行e_PurB成功!')
+        else
+          FrmMain.memBody.Lines.Add('执行e_PurB失败!')
+      end;
+    end;
+  finally
+    Timer2.Enabled := True;
+  end;
+end;
+
+procedure TFrmMain.updateSyncStatus(syncID, newStatus: Integer; value: String);
+var
+  app: IAppService;
+  tb: String;
+begin
+  //增加一个同步状态的java后台，参考TAppSyncERP.updateStatus
+  app := Service('SvrERPSyncReport.updateStatus');
+  app.DataIn.Head.FieldByName('UID_').AsInteger := syncID;
+  app.DataIn.Head.FieldByName('Status_').AsInteger := newStatus;
+  app.DataIn.Head.FieldByName('Remark_').AsString := value;
+  if app.exec then
+    FrmMain.memBody.Lines.Add('同步成功')
+  else
+    FrmMain.memBody.Lines.Add('回写失败');
 end;
 
 end.

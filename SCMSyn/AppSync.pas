@@ -34,7 +34,10 @@ var
 begin
   for i := Low(Args) to High(Args) do
   begin
-    Target.FieldByName(Args[i]).Value := Source.FieldByName(Args[i]).Value;
+    if (TVarData(Source.FieldByName(Args[i]).Value).VType = 273) then
+      Target.FieldByName(Args[i]).AsFloat := Source.FieldByName(Args[i]).AsFloat
+    else
+      Target.FieldByName(Args[i]).Value := Source.FieldByName(Args[i]).Value;
   end;
 end;
 
@@ -45,7 +48,10 @@ var
 begin
   for i := Low(Args) to High(Args) do
   begin
-    Target.FieldByName(Args[i]).Value := Source.FieldByName(Args[i]).Value;
+    if (TVarData(Source.FieldByName(Args[i]).Value).VType = 273) then
+      Target.FieldByName(Args[i]).AsFloat := Source.FieldByName(Args[i]).AsFloat
+    else
+      Target.FieldByName(Args[i]).Value := Source.FieldByName(Args[i]).Value;
   end;
 end;
 
@@ -55,7 +61,12 @@ var
   i: Integer;
 begin
   for i := Low(Args) to High(Args) do
-    Target.FieldByName(Args[i]).Value := Source.FieldByName(Args[i]).Value;
+  begin
+    if (TVarData(Source.FieldByName(Args[i]).Value).VType = 273) then
+      Target.FieldByName(Args[i]).AsFloat := Source.FieldByName(Args[i]).AsFloat
+    else
+      Target.FieldByName(Args[i]).Value := Source.FieldByName(Args[i]).Value;
+  end;
 end;
 
 
@@ -67,7 +78,9 @@ begin
   for i:=0 to Source.Fields.Count - 1 do
   begin
     sFieldName := Source.Fields[i].FieldName;
-    if Source.FieldByName(sFieldName).DataType = ftInteger  then
+    if (TVarData(Source.FieldByName(sFieldName).Value).VType = 273) then
+      Target.FieldByName(sFieldName).AsFloat := Source.FieldByName(sFieldName).AsFloat
+    else if Source.FieldByName(sFieldName).DataType = ftInteger  then
       Target.FieldByName(sFieldName).AsInteger :=Source.FieldByName(sFieldName).AsInteger
     else if Source.FieldByName(sFieldName).DataType = ftDateTime  then
       Target.FieldByName(sFieldName).AsDateTime :=Source.FieldByName(sFieldName).AsDateTime
@@ -92,7 +105,9 @@ begin
   for i:=0 to Source.Fields.Count - 1 do
   begin
     sFieldName := Source.Fields[i].FieldName;
-    if Source.FieldByName(sFieldName).DataType = ftInteger  then
+    if (TVarData(Source.FieldByName(sFieldName).Value).VType = 273) then
+      Target.FieldByName(sFieldName).AsFloat := Source.FieldByName(sFieldName).AsFloat
+    else if Source.FieldByName(sFieldName).DataType = ftInteger  then
       Target.FieldByName(sFieldName).AsInteger :=Source.FieldByName(sFieldName).AsInteger
     else if Source.FieldByName(sFieldName).DataType = ftDateTime  then
       Target.FieldByName(sFieldName).AsDateTime :=Source.FieldByName(sFieldName).AsDateTime
@@ -122,7 +137,7 @@ begin
   cdsTranB := TADOQuery.Create(nil);
   try
     cdsCRMSyn.Connection := FrmMain.oCn;
-    cdsCRMSyn.SQL.Text := Format('SELECT top 1 * FROM CRMSyn WHERE CorpCode_=''%s'' ',[FrmMain.EdtCorp.Text]);
+    cdsCRMSyn.SQL.Text := Format('SELECT top 1 * FROM CRMSyn WHERE CorpCode_=''%s'' and Status_ in (0,2) ',[FrmMain.EdtCorp.Text]);
     cdsCRMSyn.Open;
     if not cdsCRMSyn.Eof  then
     begin

@@ -47,6 +47,8 @@
 				<Form>FrmSetConn</Form>
 			</DCCReference>
 			<DCCReference Include="AppSync.pas"/>
+			<DCCReference Include="CustomSync.pas"/>
+			<DCCReference Include="SyncPur.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

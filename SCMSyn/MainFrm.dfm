@@ -3424,4 +3424,11 @@ object FrmMain: TFrmMain
     Left = 128
     Top = 72
   end
+  object Timer2: TTimer
+    Enabled = False
+    Interval = 4000
+    OnTimer = Timer2Timer
+    Left = 644
+    Top = 324
+  end
 end
