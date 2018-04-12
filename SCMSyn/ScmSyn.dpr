@@ -6,7 +6,9 @@ uses
   SetConnFrm in 'SetConnFrm.pas' {FrmSetConn},
   AppSync in 'AppSync.pas',
   CustomSync in 'CustomSync.pas',
-  SyncPur in 'SyncPur.pas';
+  SyncPur in 'SyncPur.pas',
+  SyncCusSup in 'SyncCusSup.pas',
+  SyncTranReq in 'SyncTranReq.pas';
 
 {$R *.res}
 

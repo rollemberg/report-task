@@ -10,7 +10,6 @@ type
     TBNo, Remark1,CorpCode: String;
     ConfirmDate:TDateTime;
     It,Confirm: Integer;
-    cdsTranH, cdsTranB: TADOQuery;
     function ConfirmPur(): Boolean;
   public
     function execSync: Boolean; override;
@@ -31,7 +30,7 @@ begin
   cdsPurB := TADOQuery.Create(nil);
   try
     cdsPurB.Connection := FrmMain.oCn;
-    cdsPurB.SQL.Text := Format('SELECT * FROM PurB WHERE TBNo_=''%s'' and It_=%d and Final_=1',[TBNo,It]);
+    cdsPurB.SQL.Text := Format('SELECT * FROM PurB WHERE TBNo_=''%s'' and It_=%d and Final_=1 and CorpCode_',[TBNo,It,CorpCode]);
     cdsPurB.Open;
     if not cdsPurB.Eof then
     begin
@@ -57,7 +56,7 @@ begin
   ConfirmDate:= dataOut.Head.FieldByName('ConfirmDate_').AsDateTime;
   Confirm := dataOut.Head.FieldByName('Confirm_').AsInteger;
   Remark1 := dataOut.Head.FieldByName('Remark1_').AsString;
-  //CorpCode := dataOut.Head.FieldByName('CorpCode_').AsString;
+  CorpCode := dataOut.Head.FieldByName('CorpCode_').AsString;
   //
   ConfirmPur();
 end;

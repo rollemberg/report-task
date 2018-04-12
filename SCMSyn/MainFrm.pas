@@ -69,7 +69,7 @@ var
 
 implementation
 
-uses SetConnFrm, SyncPur;
+uses SetConnFrm, SyncPur, SyncCusSup, SyncTranReq;
 
 {$R *.dfm}
 
@@ -262,6 +262,8 @@ procedure TFrmMain.Timer2Timer(Sender: TObject);
 var
   app: IAppService;
   syncpur: TSyncPur;
+  synccuSup: TSyncCusSup;
+  syncTranReq: TSyncTranReq;
 begin
   Timer2.Enabled := False;
   try
@@ -277,6 +279,22 @@ begin
           FrmMain.memBody.Lines.Add('执行e_PurB成功!')
         else
           FrmMain.memBody.Lines.Add('执行e_PurB失败!')
+      end;
+      if app.DataOut.Head.FieldByName('_SyncProject_').AsString = 'e_CusSup' then
+      begin
+        synccuSup := TSyncCusSup.Create(Self);
+        if call(synccuSup as ISyncItem, app.DataOut) then
+          FrmMain.memBody.Lines.Add('执行e_CusSup成功!')
+        else
+          FrmMain.memBody.Lines.Add('执行e_CusSupB失败!')
+      end;
+      if app.DataOut.Head.FieldByName('_SyncProject_').AsString = 'e_TranReq' then
+      begin
+        syncTranReq := TSyncTranReq.Create(Self);
+        if call(synccuSup as ISyncItem, app.DataOut) then
+          FrmMain.memBody.Lines.Add('执行e_TranReq成功!')
+        else
+          FrmMain.memBody.Lines.Add('执行e_TranReq失败!')
       end;
     end;
   finally

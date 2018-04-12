@@ -49,6 +49,8 @@
 			<DCCReference Include="AppSync.pas"/>
 			<DCCReference Include="CustomSync.pas"/>
 			<DCCReference Include="SyncPur.pas"/>
+			<DCCReference Include="SyncCusSup.pas"/>
+			<DCCReference Include="SyncTranReq.pas"/>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>
