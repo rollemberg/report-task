@@ -137,25 +137,25 @@ begin
   cdsTranB := TADOQuery.Create(nil);
   try
     cdsCRMSyn.Connection := FrmMain.oCn;
-    cdsCRMSyn.SQL.Text := Format('SELECT top 1 * FROM CRMSyn WHERE CorpCode_=''%s'' and Status_ in (0,2) ',[FrmMain.EdtCorp.Text]);
+    cdsCRMSyn.SQL.Text := Format('SELECT top 10 * FROM CRMSyn WHERE CorpCode_=''%s'' and Status_ in (0,2,3) ',[FrmMain.EdtCorp.Text]);
     cdsCRMSyn.Open;
-    if not cdsCRMSyn.Eof  then
+    while not cdsCRMSyn.Eof do
     begin
-      if cdsCRMSyn.FieldByName('Status_').AsInteger in [0,2] then   //0-待同步 1-已同步 2-重新同步 3-不需要同步 4-同步失败
+      if cdsCRMSyn.FieldByName('Status_').AsInteger in [0,2,3] then   //0-待同步 1-已同步 2-重新同步 3-不需要同步 4-同步失败
       try
         CRMSynID := cdsCRMSyn.FieldByName('ID_').AsString;
         if cdsCRMSyn.FieldByName('Type_').AsInteger = 0 then  //0-非单据(单表)  1-单据
         begin
           cdsTranH.Connection := FrmMain.oCn;
-          cdsTranH.SQL.Text := Format('SELECT top 1 * FROM %s WHERE CorpCode_=''%s'' and %s=''%s'' '
-            ,[cdsCRMSyn.FieldByName('Table_').AsString,FrmMain.EdtCorp.Text,cdsCRMSyn.FieldByName('KeyCode_').AsString,cdsCRMSyn.FieldByName('TBNo_').AsString]);
+          cdsTranH.SQL.Text := Format('SELECT top 1 * FROM %s WHERE CorpCode_=''%s'' and ID_=''%s'' '
+            ,[cdsCRMSyn.FieldByName('Table_').AsString,FrmMain.EdtCorp.Text,cdsCRMSyn.FieldByName('TBID_').AsString]);
           cdsTranH.Open;
           if not cdsTranH.Eof then
           begin
             sTable := 'E_'+cdsCRMSyn.FieldByName('Table_').AsString;
             app := Service('SvrERPSyncReport.SyncERPDate');
             app.DataIn.Head.FieldByName('E_Table_').AsString := sTable;
-            app.DataIn.Head.FieldByName('KeyCode_').AsString := cdsCRMSyn.FieldByName('KeyCode_').AsString;
+            app.DataIn.Head.FieldByName('Status_').AsInteger := cdsCRMSyn.FieldByName('Status_').AsInteger;
             CopyRecord(app.DataIn.Head,cdsTranH);
           end;
           if app.Exec then
@@ -172,8 +172,8 @@ begin
         else
         begin
           cdsTranH.Connection := FrmMain.oCn;
-          cdsTranH.SQL.Text := Format('SELECT top 1 * FROM %sH WHERE CorpCode_=''%s'' and %s=''%s'' and Ver_<=0 and Final_=1'
-            ,[cdsCRMSyn.FieldByName('Table_').AsString,FrmMain.EdtCorp.Text,cdsCRMSyn.FieldByName('KeyCode_').AsString,cdsCRMSyn.FieldByName('TBNo_').AsString]);
+          cdsTranH.SQL.Text := Format('SELECT top 1 * FROM %sH WHERE CorpCode_=''%s'' and ID_=''%s'' '
+            ,[cdsCRMSyn.FieldByName('Table_').AsString,FrmMain.EdtCorp.Text,cdsCRMSyn.FieldByName('TBID_').AsString]);
           cdsTranH.Open;
           if not cdsTranH.Eof then
           begin
@@ -184,7 +184,7 @@ begin
             sTable := 'E_'+cdsCRMSyn.FieldByName('Table_').AsString+'H';
             app := Service('SvrERPSyncReport.SyncERPDate');
             app.DataIn.Head.FieldByName('E_Table_').AsString := sTable;
-            app.DataIn.Head.FieldByName('KeyCode_').AsString := cdsCRMSyn.FieldByName('KeyCode_').AsString;
+            app.DataIn.Head.FieldByName('Status_').AsInteger := cdsCRMSyn.FieldByName('Status_').AsInteger;
             CopyRecord(app.DataIn.Head,cdsTranH);
             cdsTranB.First;
             while not cdsTranB.Eof do
@@ -215,6 +215,7 @@ begin
           FrmMain.memBody.Lines.Add('error: '+ E.Message);
         end;
       end;
+      cdsCRMSyn.Next;
     end;
   finally
     cdsCRMSyn.Free;

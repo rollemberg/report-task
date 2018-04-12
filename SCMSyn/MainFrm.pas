@@ -127,6 +127,7 @@ begin
   cboRemoteHost.Enabled := not dReadOnly;
   edtRemoteUser.ReadOnly := dReadOnly;
   edtRemotePwd.ReadOnly := dReadOnly;
+  EdtCorp.ReadOnly := dReadOnly;
 end;
 
 procedure TFrmMain.C1Click(Sender: TObject);

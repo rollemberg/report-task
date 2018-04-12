@@ -1,2 +1,5 @@
 2018/04/10 下午 01:43:59,HttpObject[EIdHTTPProtocolException] Error:HTTP/1.1 404 Not Found
 2018/04/10 下午 08:12:08,HttpObject[EIdHTTPProtocolException] Error:HTTP/1.1 500 Internal Server Error
+2018/04/11 下午 09:04:19,HttpObject[EIdHTTPProtocolException] Error:HTTP/1.1 500 Internal Server Error
+2018/04/11 下午 10:02:58,HttpObject[EIdSocketError] Error:Socket Error # 10054
+Connection reset by peer.
