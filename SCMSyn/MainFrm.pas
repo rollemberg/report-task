@@ -36,13 +36,10 @@ type
     Label6: TLabel;
     memBody: TMemo;
     Image1: TImage;
-    Panel1: TPanel;
-    BitBtn3: TBitBtn;
-    BitBtn4: TBitBtn;
     oCn: TADOConnection;
-    Label1: TLabel;
-    EdtCorp: TEdit;
     Timer2: TTimer;
+    cdsDBListSyncType_: TIntegerField;
+    cdsDBListERPCode_: TWideStringField;
     procedure FormCreate(Sender: TObject);
     procedure BtnOpenClick(Sender: TObject);
     procedure C1Click(Sender: TObject);
@@ -50,7 +47,6 @@ type
     procedure popShowFormClick(Sender: TObject);
     procedure N3Click(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
-    procedure BitBtn3Click(Sender: TObject);
     procedure Timer2Timer(Sender: TObject);
   private
     { Private declarations }
@@ -62,32 +58,24 @@ type
   public
     { Public declarations }
     function KillTask(ExeFileName:string):boolean;
+    procedure ReadDBList;
   end;
 
 var
   FrmMain: TFrmMain;
   __Account: string;
   __Password: string;
+  __CorpCode: string;
 implementation
 
-uses SetConnFrm, SyncPur, SyncCusSup, SyncTranReq, SyncSendTran;
+uses SyncPur, SyncCusSup, SyncTranReq, SyncSendTran;
 
 {$R *.dfm}
-
-procedure TFrmMain.BitBtn3Click(Sender: TObject);
-begin
-  if (EdtCorp.Text = '') then
-  begin
-    ShowMessage('请输入公司别！');
-    Exit;
-  end;
-  if not TFrmSetConn.Execute(oCn) then Exit;
-  BtnOpen.Enabled := oCn.Connected;
-end;
 
 procedure TFrmMain.BtnOpenClick(Sender: TObject);
 var
   dReadOnly: Boolean;
+  sAccount,sPassword,sHost,DBName : string;
 begin
   if (cboRemoteHost.Text = '') then
   begin
@@ -113,24 +101,51 @@ begin
     Ini.Free;
   end;
   __ServerIP := cboRemoteHost.Text;
-  dReadOnly := loginToVine(edtRemoteUser.Text, edtRemotePwd.Text);
-  if not dReadOnly then
+  if not loginToVine(edtRemoteUser.Text, edtRemotePwd.Text) then
     begin
-      __Account := edtRemoteUser.Text;
-      __Password := edtRemotePwd.Text;
       ShowMessage('登录失败');
       Exit;
     end
   else
+  begin
+    __Account := edtRemoteUser.Text;
+    __Password := edtRemotePwd.Text;
     memBody.Lines.Add('登录成功');
+  end;
+  ReadDBList;
+  if cdsDBList.Eof then
+  begin
+    ShowMessage('无可连接数据库');
+    Exit;
+  end;
+  sAccount := cdsDBList.FieldByName('Account_').AsString;
+  sPassword := cdsDBList.FieldByName('Password_').AsString;
+  DBName := cdsDBList.FieldByName('Database_').AsString;
+  sHost :=  cdsDBList.FieldByName('Host_').AsString;
+  __CorpCode :=  cdsDBList.FieldByName('ERPCode_').AsString;
+  try
+    oCn.Close;
+    oCn.ConnectionString := Format('Provider=SQLOLEDB.1;Password=%s;Persist '
+      + 'Security Info=True;User ID=%s;Initial Catalog=%s;Data Source=%s',
+      [sPassword,sAccount,DBName,sHost]);
+    oCn.LoginPrompt := False;
+    oCn.Open;
+    dReadOnly := oCn.Connected;
+    BtnOpen.Enabled := not dReadOnly;
+    cboRemoteHost.Enabled := not dReadOnly;
+    edtRemoteUser.ReadOnly := dReadOnly;
+    edtRemotePwd.ReadOnly := dReadOnly;
+  except
+    on E: Exception do
+    begin
+      FrmMain.memBody.Lines.Add('error: ' + DBName + '-' +  E.Message);
+    end;
+  end;
+
   timer1.Enabled := True;
   timer2.Enabled := True;
-  BtnOpen.Enabled := not dReadOnly;
-  BitBtn3.Enabled := not dReadOnly;
-  cboRemoteHost.Enabled := not dReadOnly;
-  edtRemoteUser.ReadOnly := dReadOnly;
-  edtRemotePwd.ReadOnly := dReadOnly;
-  EdtCorp.ReadOnly := dReadOnly;
+
+
 end;
 
 procedure TFrmMain.C1Click(Sender: TObject);
@@ -245,6 +260,41 @@ begin
   Application.Restore;
   Show;
   Application.BringToFront;
+end;
+
+procedure TFrmMain.ReadDBList;
+var
+  app: IAppService;
+begin
+  app := Service('SvrERPSyncReport.getDBList');
+  if app.Exec then
+    begin
+      cdsDBList.EmptyDataSet;
+      with app.DataOut do
+      begin
+        First;
+        while not Eof do
+        begin
+          if FieldByName('SyncType_').AsInteger = 1 then
+          begin
+            cdsDBList.Append;
+            cdsDBList.FieldByName('DBUID_').AsString := FieldByName('UID_').AsString;
+            cdsDBList.FieldByName('Database_').AsString := FieldByName('Database_').AsString;
+            cdsDBList.FieldByName('Host_').AsString := FieldByName('Host_').AsString;
+            cdsDBList.FieldByName('Account_').AsString := FieldByName('Account_').AsString;
+            cdsDBList.FieldByName('Password_').AsString := FieldByName('Password_').AsString;
+            cdsDBList.FieldByName('PortNo_').AsString := FieldByName('PortNo_').AsString;
+            cdsDBList.FieldByName('ExecuteTime_').AsDateTime := FieldByName('ExecuteTime_').AsDateTime;
+            cdsDBList.FieldByName('SyncType_').AsInteger := FieldByName('SyncType_').AsInteger;
+            cdsDBList.FieldByName('ERPCode_').AsString := FieldByName('ERPCode_').AsString;
+            cdsDBList.Post();
+          end;
+          Next;
+        end;
+      end;
+    end
+  else
+    ShowMessage(app.Messages);
 end;
 
 procedure TFrmMain.Timer1Timer(Sender: TObject);
