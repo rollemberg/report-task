@@ -35,7 +35,6 @@ begin
     if not cdsTranReq.Eof then
     begin
       cdsTranReq.Edit;
-      cdsTranReq.FieldByName('Name_').AsString := Name;
       cdsTranReq.FieldByName('ConfirmDate_').AsDateTime := ConfirmDate;
       cdsTranReq.FieldByName('Confirm_').AsInteger := Confirm;
       cdsTranReq.Post;
@@ -43,7 +42,7 @@ begin
   finally
     cdsTranReq.Free;
   end;
-  FrmMain.memBody.Lines.Add('回写厂商资料成功');
+  FrmMain.memBody.Lines.Add('回写采购变更资料成功');
 end;
 
 function TSyncTranReq.execSync: Boolean;

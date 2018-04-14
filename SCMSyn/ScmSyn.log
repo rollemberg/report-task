@@ -3,3 +3,5 @@
 2018/04/11 ¤U¤È 09:04:19,HttpObject[EIdHTTPProtocolException] Error:HTTP/1.1 500 Internal Server Error
 2018/04/11 ¤U¤È 10:02:58,HttpObject[EIdSocketError] Error:Socket Error # 10054
 Connection reset by peer.
+2018/04/13 ¤W¤È 10:10:28,HttpObject[EIdSocketError] Error:Socket Error # 10061
+Connection refused.

@@ -66,10 +66,11 @@ type
 
 var
   FrmMain: TFrmMain;
-
+  __Account: string;
+  __Password: string;
 implementation
 
-uses SetConnFrm, SyncPur, SyncCusSup, SyncTranReq;
+uses SetConnFrm, SyncPur, SyncCusSup, SyncTranReq, SyncSendTran;
 
 {$R *.dfm}
 
@@ -115,6 +116,8 @@ begin
   dReadOnly := loginToVine(edtRemoteUser.Text, edtRemotePwd.Text);
   if not dReadOnly then
     begin
+      __Account := edtRemoteUser.Text;
+      __Password := edtRemotePwd.Text;
       ShowMessage('登录失败');
       Exit;
     end
@@ -264,8 +267,10 @@ var
   syncpur: TSyncPur;
   synccuSup: TSyncCusSup;
   syncTranReq: TSyncTranReq;
+  syncSendTran:TSyncSendTran;
 begin
   Timer2.Enabled := False;
+  if not loginToVine(__Account, __Password) then Exit;
   try
     app := Service('TAppSyncERP.download');
     if app.Exec then
@@ -291,11 +296,20 @@ begin
       if app.DataOut.Head.FieldByName('_SyncProject_').AsString = 'e_TranReq' then
       begin
         syncTranReq := TSyncTranReq.Create(Self);
-        if call(synccuSup as ISyncItem, app.DataOut) then
+        if call(syncTranReq as ISyncItem, app.DataOut) then
           FrmMain.memBody.Lines.Add('执行e_TranReq成功!')
         else
           FrmMain.memBody.Lines.Add('执行e_TranReq失败!')
       end;
+      if app.DataOut.Head.FieldByName('_SyncProject_').AsString = 'e_SendTran' then
+      begin
+        SyncSendTran := TSyncSendTran.Create(Self);
+        if call(SyncSendTran as ISyncItem, app.DataOut) then
+          FrmMain.memBody.Lines.Add('执行e_TranReq成功!')
+        else
+          FrmMain.memBody.Lines.Add('执行e_TranReq失败!')
+      end;
+
     end;
   finally
     Timer2.Enabled := True;

@@ -137,7 +137,7 @@ begin
   cdsTranB := TADOQuery.Create(nil);
   try
     cdsCRMSyn.Connection := FrmMain.oCn;
-    cdsCRMSyn.SQL.Text := Format('SELECT top 10 * FROM CRMSyn WHERE CorpCode_=''%s'' and Status_ in (0,2,3) ',[FrmMain.EdtCorp.Text]);
+    cdsCRMSyn.SQL.Text := Format('SELECT top 10 * FROM CRMSyn WHERE CorpCode_=''%s'' and ISNULL(CorpNo_,'''') <>'''' and Status_ in (0,2,3) order by AppDate_ ',[FrmMain.EdtCorp.Text]);
     cdsCRMSyn.Open;
     while not cdsCRMSyn.Eof do
     begin
@@ -153,20 +153,25 @@ begin
           if not cdsTranH.Eof then
           begin
             sTable := 'E_'+cdsCRMSyn.FieldByName('Table_').AsString;
-            app := Service('SvrERPSyncReport.SyncERPDate');
-            app.DataIn.Head.FieldByName('E_Table_').AsString := sTable;
-            app.DataIn.Head.FieldByName('Status_').AsInteger := cdsCRMSyn.FieldByName('Status_').AsInteger;
-            CopyRecord(app.DataIn.Head,cdsTranH);
-          end;
-          if app.Exec then
+            if loginToVine(__Account, __Password) then
             begin
-              FrmMain.oCn.Execute(Format('UPDATE CRMSyn SET Status_=1 WHERE ID_=''%s''',[CRMSynID]));
-              FrmMain.memBody.Lines.Add('同步成功');
-            end
-          else
-          begin
-            FrmMain.oCn.Execute(Format('UPDATE CRMSyn SET Status_=4 WHERE ID_=''%s''',[CRMSynID]));
-            ShowMessage('同步失败:'+app.Messages);
+              app := Service('SvrERPSyncReport.SyncERPDate');
+              app.DataIn.Head.FieldByName('E_Table_').AsString := sTable;
+              app.DataIn.Head.FieldByName('Status_').AsInteger := cdsCRMSyn.FieldByName('Status_').AsInteger;
+              app.DataIn.Head.FieldByName('CorpNo_').AsString := cdsCRMSyn.FieldByName('CorpNo_').AsString;
+
+              CopyRecord(app.DataIn.Head,cdsTranH);
+              if app.Exec then
+                begin
+                  FrmMain.oCn.Execute(Format('UPDATE CRMSyn SET Status_=1 WHERE ID_=''%s''',[CRMSynID]));
+                  FrmMain.memBody.Lines.Add('同步成功');
+                end
+              else
+              begin
+                FrmMain.oCn.Execute(Format('UPDATE CRMSyn SET Status_=4 WHERE ID_=''%s''',[CRMSynID]));
+                ShowMessage('同步失败:'+app.Messages);
+              end;
+            end;
           end;
         end
         else
@@ -177,34 +182,38 @@ begin
           cdsTranH.Open;
           if not cdsTranH.Eof then
           begin
-            PID:= cdsTranH.FieldByName('ID_').AsString;
-            cdsTranB.Connection := FrmMain.oCn;
-            cdsTranB.SQL.Text := Format('SELECT * FROM %sB WHERE PID_=''%s'' ',[cdsCRMSyn.FieldByName('Table_').AsString,PID]);
-            cdsTranB.Open;
-            sTable := 'E_'+cdsCRMSyn.FieldByName('Table_').AsString+'H';
-            app := Service('SvrERPSyncReport.SyncERPDate');
-            app.DataIn.Head.FieldByName('E_Table_').AsString := sTable;
-            app.DataIn.Head.FieldByName('Status_').AsInteger := cdsCRMSyn.FieldByName('Status_').AsInteger;
-            CopyRecord(app.DataIn.Head,cdsTranH);
-            cdsTranB.First;
-            while not cdsTranB.Eof do
+            if loginToVine(__Account, __Password) then
             begin
-              app.DataIn.Append();
-              sTable := 'E_'+cdsCRMSyn.FieldByName('Table_').AsString+'B';
-              app.DataIn.FieldByName('E_Table_').AsString := sTable;
-              CopyRecord(app.DataIn,cdsTranB);
-              app.DataIn.Post;
-              cdsTranB.Next;
-            end;
-            if app.Exec then
+              PID:= cdsTranH.FieldByName('ID_').AsString;
+              cdsTranB.Connection := FrmMain.oCn;
+              cdsTranB.SQL.Text := Format('SELECT * FROM %sB WHERE PID_=''%s'' ',[cdsCRMSyn.FieldByName('Table_').AsString,PID]);
+              cdsTranB.Open;
+              sTable := 'E_'+cdsCRMSyn.FieldByName('Table_').AsString+'H';
+              app := Service('SvrERPSyncReport.SyncERPDate');
+              app.DataIn.Head.FieldByName('E_Table_').AsString := sTable;
+              app.DataIn.Head.FieldByName('Status_').AsInteger := cdsCRMSyn.FieldByName('Status_').AsInteger;
+              app.DataIn.Head.FieldByName('CorpNo_').AsString := cdsCRMSyn.FieldByName('CorpNo_').AsString;
+              CopyRecord(app.DataIn.Head,cdsTranH);
+              cdsTranB.First;
+              while not cdsTranB.Eof do
               begin
-                FrmMain.oCn.Execute(Format('UPDATE CRMSyn SET Status_=1 WHERE ID_=''%s''',[CRMSynID]));
-                FrmMain.memBody.Lines.Add('同步成功');
-              end
-            else
-            begin
-              FrmMain.oCn.Execute(Format('UPDATE CRMSyn SET Status_=4 WHERE ID_=''%s''',[CRMSynID]));
-              ShowMessage('同步失败:'+app.Messages);
+                app.DataIn.Append();
+                sTable := 'E_'+cdsCRMSyn.FieldByName('Table_').AsString+'B';
+                app.DataIn.FieldByName('E_Table_').AsString := sTable;
+                CopyRecord(app.DataIn,cdsTranB);
+                app.DataIn.Post;
+                cdsTranB.Next;
+              end;
+              if app.Exec then
+                begin
+                  FrmMain.oCn.Execute(Format('UPDATE CRMSyn SET Status_=1 WHERE ID_=''%s''',[CRMSynID]));
+                  FrmMain.memBody.Lines.Add('同步成功');
+                end
+              else
+              begin
+                FrmMain.oCn.Execute(Format('UPDATE CRMSyn SET Status_=4 WHERE ID_=''%s''',[CRMSynID]));
+                ShowMessage('同步失败:'+app.Messages);
+              end;
             end;
           end;
         end;

@@ -30,7 +30,7 @@ begin
   cdsPurB := TADOQuery.Create(nil);
   try
     cdsPurB.Connection := FrmMain.oCn;
-    cdsPurB.SQL.Text := Format('SELECT * FROM PurB WHERE TBNo_=''%s'' and It_=%d and Final_=1 and CorpCode_',[TBNo,It,CorpCode]);
+    cdsPurB.SQL.Text := Format('SELECT * FROM PurB WHERE TBNo_=''%s'' and It_=%d and Final_=1 and CorpCode_=''%s''',[TBNo,It,CorpCode]);
     cdsPurB.Open;
     if not cdsPurB.Eof then
     begin

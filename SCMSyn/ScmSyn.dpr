@@ -8,7 +8,8 @@ uses
   CustomSync in 'CustomSync.pas',
   SyncPur in 'SyncPur.pas',
   SyncCusSup in 'SyncCusSup.pas',
-  SyncTranReq in 'SyncTranReq.pas';
+  SyncTranReq in 'SyncTranReq.pas',
+  SyncSendTran in 'SyncSendTran.pas';
 
 {$R *.res}
 
