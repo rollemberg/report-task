@@ -8,7 +8,7 @@ type
   TSyncCusSup = class(TCustomSync)
   private
     Code,Name, Address,Tel1,Tel2,Fax: String;
-    Email,ShortName,CorpCode: String;
+    Email,EShortName_,CorpCode: String;
     function ConfirmCusSup(): Boolean;
   public
     function execSync: Boolean; override;
@@ -40,7 +40,7 @@ begin
       cdsCusSup.FieldByName('Tel2_').AsString := Tel2;
       cdsCusSup.FieldByName('Fax_').AsString := Fax;
       cdsCusSup.FieldByName('Email_').AsString := Email;
-      cdsCusSup.FieldByName('ShortName_').AsString := ShortName;
+      cdsCusSup.FieldByName('EShortName_').AsString := EShortName_;
       cdsCusSup.Post;
     end;
   finally
@@ -59,7 +59,7 @@ begin
   Tel2 := dataOut.Head.FieldByName('Tel2_').AsString;
   Fax := dataOut.Head.FieldByName('Fax_').AsString;
   Email := dataOut.Head.FieldByName('Email_').AsString;
-  ShortName := dataOut.Head.FieldByName('ShortName_').AsString;
+  EShortName_ := dataOut.Head.FieldByName('EShortName_').AsString; //主要联系人
   CorpCode := dataOut.Head.FieldByName('CorpCode_').AsString;
 
   //

@@ -8,9 +8,9 @@ type
   TSyncSendTran = class(TCustomSync)
   private
     TBNo,CorpCode,MakeNo,PartCode,PurNo: String;
-    QCFile,Remark,SupCode: String;
+    QCFile,Remark,SupCode,ID: String;
     FinishDate,TBDate:TDateTime;
-    ID,It,Finish,MakeIt,PurIt: Integer;
+    It,Finish,MakeIt,PurIt: Integer;
     Num: Double;
     function ConfirmSendTran(): Boolean;
   public
@@ -39,7 +39,7 @@ begin
     cdsSendTran.FieldByName('CorpCode_').AsString := CorpCode;
     cdsSendTran.FieldByName('FinishDate_').AsDateTime := FinishDate;
     cdsSendTran.FieldByName('Finish_').AsInteger := Finish;
-    //cdsSendTran.FieldByName('ID_').AsInteger := ID;
+    cdsSendTran.FieldByName('ID_').AsString := ID;
     cdsSendTran.FieldByName('It_').AsInteger := It;
     cdsSendTran.FieldByName('MakeIt_').AsInteger := MakeIt;
     cdsSendTran.FieldByName('MakeNo_').AsString := MakeNo;
@@ -75,7 +75,7 @@ begin
   CorpCode := dataOut.Head.FieldByName('CorpCode_').AsString;
   FinishDate:= dataOut.Head.FieldByName('FinishDate_').AsDateTime;
   Finish := dataOut.Head.FieldByName('Finish_').AsInteger;
-  ID := dataOut.Head.FieldByName('ID_').AsInteger;
+  ID := dataOut.Head.FieldByName('ID_').AsString;
   It := dataOut.Head.FieldByName('It_').AsInteger;
   MakeIt := dataOut.Head.FieldByName('MakeIt_').AsInteger;
   MakeNo := dataOut.Head.FieldByName('MakeNo_').AsString;

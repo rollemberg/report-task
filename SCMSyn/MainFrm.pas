@@ -53,8 +53,11 @@ type
     TrayIconData: TNotifyIconData;
     Ini: TIniFile;
     procedure OnTrayMessage(var Msg: TMessage); message WM_USER + 100;
-    function call(intf: ISyncItem; dataOut: TAppDataSet): Boolean;
-    procedure updateSyncStatus(syncID, newStatus: Integer;value: String);
+    procedure CheckSync(const CorpNo: String);
+    procedure updateSyncStatus(syncID, newStatus: Integer; value,
+      corpno: String);
+    function call(intf: ISyncItem; dataOut: TAppDataSet;
+      const corpno: String): Boolean;
   public
     { Public declarations }
     function KillTask(ExeFileName:string):boolean;
@@ -153,17 +156,66 @@ begin
   Close;
 end;
 
-function TFrmMain.call(intf: ISyncItem; dataOut: TAppDataSet): Boolean;
+function TFrmMain.call(intf: ISyncItem; dataOut: TAppDataSet; const corpno: String): Boolean;
 begin
   intf.setDataOut(dataOut);
   Result := intf.execSync;
   //回写到服务器
   if Result then
     begin
-      updateSyncStatus(dataOut.Head.FieldByName('_SyncUID_').AsInteger, 1, '执行成功！');
+      updateSyncStatus(dataOut.Head.FieldByName('_SyncUID_').AsInteger, 1, '执行成功！', corpno);
     end
   else
-    updateSyncStatus(dataOut.Head.FieldByName('_SyncUID_').AsInteger, 2, '执行失败！');
+    updateSyncStatus(dataOut.Head.FieldByName('_SyncUID_').AsInteger, 2, '执行失败！', corpno);
+end;
+
+procedure TFrmMain.CheckSync(const corpno: String);
+var
+  app: IAppService;
+  syncpur: TSyncPur;
+  synccuSup: TSyncCusSup;
+  syncTranReq: TSyncTranReq;
+  syncSendTran:TSyncSendTran;
+begin
+  app := Service('TAppSyncERP.download');
+  app.DataIn.Head.FieldByName('CorpNo_').AsString := corpno;
+  if app.Exec then
+  begin
+    if not app.DataOut.Head.FieldDefs.Exists('_SyncUID_') then
+      Exit;
+    if app.DataOut.Head.FieldByName('_SyncProject_').AsString = 'e_PurB' then
+    begin
+      syncpur := TSyncPur.Create(Self);
+      if call(syncpur as ISyncItem, app.DataOut, corpno) then
+        FrmMain.memBody.Lines.Add('执行e_PurB成功!')
+      else
+        FrmMain.memBody.Lines.Add('执行e_PurB失败!')
+    end;
+    if app.DataOut.Head.FieldByName('_SyncProject_').AsString = 'e_CusSup' then
+    begin
+      synccuSup := TSyncCusSup.Create(Self);
+      if call(synccuSup as ISyncItem, app.DataOut, corpno) then
+        FrmMain.memBody.Lines.Add('执行e_CusSup成功!')
+      else
+        FrmMain.memBody.Lines.Add('执行e_CusSupB失败!')
+    end;
+    if app.DataOut.Head.FieldByName('_SyncProject_').AsString = 'e_TranReq' then
+    begin
+      syncTranReq := TSyncTranReq.Create(Self);
+      if call(syncTranReq as ISyncItem, app.DataOut, corpno) then
+        FrmMain.memBody.Lines.Add('执行e_TranReq成功!')
+      else
+        FrmMain.memBody.Lines.Add('执行e_TranReq失败!')
+    end;
+    if app.DataOut.Head.FieldByName('_SyncProject_').AsString = 'e_SendTran' then
+    begin
+      SyncSendTran := TSyncSendTran.Create(Self);
+      if call(SyncSendTran as ISyncItem, app.DataOut, corpno) then
+        FrmMain.memBody.Lines.Add('执行e_TranReq成功!')
+      else
+        FrmMain.memBody.Lines.Add('执行e_TranReq失败!')
+    end;
+  end;
 end;
 
 procedure TFrmMain.FormCreate(Sender: TObject);
@@ -313,60 +365,29 @@ end;
 
 procedure TFrmMain.Timer2Timer(Sender: TObject);
 var
-  app: IAppService;
-  syncpur: TSyncPur;
-  synccuSup: TSyncCusSup;
-  syncTranReq: TSyncTranReq;
-  syncSendTran:TSyncSendTran;
+  cdsSup: TADOQuery;
 begin
   Timer2.Enabled := False;
   if not loginToVine(__Account, __Password) then Exit;
+  cdsSup := TADOQuery.Create(nil);
   try
-    app := Service('TAppSyncERP.download');
-    if app.Exec then
+    cdsSup.Connection := FrmMain.oCn;
+    cdsSup.SQL.Text := 'select distinct CorpNo_ from cussup where isnull(CorpNo_,'''')<>''''';
+    cdsSup.Open;
+    if not cdsSup.Eof then
     begin
-      if not app.DataOut.Head.FieldDefs.Exists('_SyncUID_') then
-        Exit;
-      if app.DataOut.Head.FieldByName('_SyncProject_').AsString = 'e_PurB' then
+      while not cdsSup.Eof do
       begin
-        syncpur := TSyncPur.Create(Self);
-        if call(syncpur as ISyncItem, app.DataOut) then
-          FrmMain.memBody.Lines.Add('执行e_PurB成功!')
-        else
-          FrmMain.memBody.Lines.Add('执行e_PurB失败!')
+        CheckSync(cdsSup.FieldByName('CorpNo_').AsString);
+        cdsSup.Next;
       end;
-      if app.DataOut.Head.FieldByName('_SyncProject_').AsString = 'e_CusSup' then
-      begin
-        synccuSup := TSyncCusSup.Create(Self);
-        if call(synccuSup as ISyncItem, app.DataOut) then
-          FrmMain.memBody.Lines.Add('执行e_CusSup成功!')
-        else
-          FrmMain.memBody.Lines.Add('执行e_CusSupB失败!')
-      end;
-      if app.DataOut.Head.FieldByName('_SyncProject_').AsString = 'e_TranReq' then
-      begin
-        syncTranReq := TSyncTranReq.Create(Self);
-        if call(syncTranReq as ISyncItem, app.DataOut) then
-          FrmMain.memBody.Lines.Add('执行e_TranReq成功!')
-        else
-          FrmMain.memBody.Lines.Add('执行e_TranReq失败!')
-      end;
-      if app.DataOut.Head.FieldByName('_SyncProject_').AsString = 'e_SendTran' then
-      begin
-        SyncSendTran := TSyncSendTran.Create(Self);
-        if call(SyncSendTran as ISyncItem, app.DataOut) then
-          FrmMain.memBody.Lines.Add('执行e_TranReq成功!')
-        else
-          FrmMain.memBody.Lines.Add('执行e_TranReq失败!')
-      end;
-
     end;
   finally
     Timer2.Enabled := True;
   end;
 end;
 
-procedure TFrmMain.updateSyncStatus(syncID, newStatus: Integer; value: String);
+procedure TFrmMain.updateSyncStatus(syncID, newStatus: Integer; value, corpno: String);
 var
   app: IAppService;
   tb: String;
@@ -376,6 +397,7 @@ begin
   app.DataIn.Head.FieldByName('UID_').AsInteger := syncID;
   app.DataIn.Head.FieldByName('Status_').AsInteger := newStatus;
   app.DataIn.Head.FieldByName('Remark_').AsString := value;
+  app.DataIn.Head.FieldByName('CorpNo_').AsString := corpno;
   if app.exec then
     FrmMain.memBody.Lines.Add('同步成功')
   else

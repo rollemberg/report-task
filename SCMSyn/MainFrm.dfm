@@ -6637,8 +6637,6 @@ object FrmMain: TFrmMain
     BevelOuter = bvNone
     BorderWidth = 8
     TabOrder = 0
-    ExplicitTop = 39
-    ExplicitHeight = 406
     object Label4: TLabel
       Left = 270
       Top = 172
